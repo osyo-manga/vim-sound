@@ -44,6 +44,9 @@ function! s:play_wav_list(wavs)
 	elseif executable("afplay")
 		let expr = join(wavs, "\n")
 		return reunions#process(printf("echo \\\"%s\" | awk '{ print \"afplay \\\" $0 }' | bash", expr))
+	elseif executable("aplay")
+		let expr = join(wavs, "\n")
+		return reunions#process(printf("echo \\\"%s\" | awk '{ print \"aplay \\\" $0 }' | bash", expr))
 	else
 		return ""
 	endif
