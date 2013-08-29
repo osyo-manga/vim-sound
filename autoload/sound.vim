@@ -2,6 +2,7 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+
 function! s:wav_cmd(wav)
 	if !filereadable(a:wav)
 		return ""
@@ -20,18 +21,29 @@ function! s:wav_cmd(wav)
 endfunction
 
 
-function! s:wav_cmd(wav)
-	return s:wav_cmd(a:wav)
+function! s:play_wav(wav)
+	let cmd = s:wav_cmd(a:wav)
+	if empty(cmd)
+		return
+	endif
+	call vimproc#system_bg(cmd)
 endfunction
 
-function! s:wav_list_cmd(wavs)
+
+function! s:play_wav_list(wavs)
 	let wavs = filter(a:wavs, "filereadable(v:val)")
 	if empty(wavs)
 		return ""
 	endif
+		let expr = join(wavs, "\\n")
+		echo 
+
 	if executable("ruby") && (has("win32") || has("win64"))
 		let expr = join(map(wavs, "\"Win32API.new('winmm','PlaySound', 'ppl', 'i').call(\" . string(v:val) . \",nil,0)\""), ';')
-		return printf("ruby -r \"Win32API\" -e \"%s\"", expr)
+		return vimproc#system_bg(printf("ruby -r \"Win32API\" -e \"%s\"", expr))
+	elseif executable("afplay")
+		let expr = join(wavs, "\n")
+		return reunions#process(printf("echo \\\"%s\" | awk '{ print \"afplay \\\" $0 }' | bash", expr))
 	else
 		return ""
 	endif
@@ -39,16 +51,12 @@ endfunction
 
 
 function! sound#play_wav(wav)
+	echo a:wav
 	if type(a:wav) == type([])
-		let cmd = s:wav_list_cmd(a:wav)
+		return s:play_wav_list(a:wav)
 	else
-		let cmd = s:wav_cmd(a:wav)
+		return s:play_wav(a:wav)
 	endif
-	if empty(cmd)
-		return
-	endif
-	echo cmd
-	call vimproc#system_bg(cmd)
 endfunction
 
 
