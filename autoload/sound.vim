@@ -31,13 +31,14 @@ endfunction
 
 
 function! s:play_wav_list(wavs)
+	if len(a:wavs) == 1
+		return s:play_wav(a:wavs[0])
+	endif
 	let wavs = filter(a:wavs, "filereadable(v:val)")
 	if empty(wavs)
 		return ""
 	endif
 		let expr = join(wavs, "\\n")
-		echo 
-
 	if executable("ruby") && (has("win32") || has("win64"))
 		let expr = join(map(wavs, "\"Win32API.new('winmm','PlaySound', 'ppl', 'i').call(\" . string(v:val) . \",nil,0)\""), ';')
 		return vimproc#system_bg(printf("ruby -r \"Win32API\" -e \"%s\"", expr))
@@ -54,7 +55,6 @@ endfunction
 
 
 function! sound#play_wav(wav)
-	echo a:wav
 	if type(a:wav) == type([])
 		return s:play_wav_list(a:wav)
 	else
