@@ -31,6 +31,12 @@ endfunction
 
 
 function! s:play_wav_list(wavs)
+" 	let cmd = join(filter(map(a:wavs, "s:wav_cmd(v:val)"), "!empty(v:val)"), " ; ")
+" 	if empty(cmd)
+" 		return
+" 	endif
+" 	echom cmd
+" 	call vimproc#system_bg(cmd)
 	if len(a:wavs) == 1
 		return s:play_wav(a:wavs[0])
 	endif
@@ -38,15 +44,14 @@ function! s:play_wav_list(wavs)
 	if empty(wavs)
 		return ""
 	endif
-		let expr = join(wavs, "\\n")
 	if executable("ruby") && (has("win32") || has("win64"))
 		let expr = join(map(wavs, "\"Win32API.new('winmm','PlaySound', 'ppl', 'i').call(\" . string(v:val) . \",nil,0)\""), ';')
 		return vimproc#system_bg(printf("ruby -r \"Win32API\" -e \"%s\"", expr))
 	elseif executable("afplay")
-		let expr = join(wavs, "\n")
+		let expr = join(wavs, "\\n")
 		return reunions#process(printf("echo \\\"%s\\\" | awk '{ print \\\"afplay \\\" $0 }' | bash", expr))
 	elseif executable("aplay")
-		let expr = join(wavs, "\n")
+		let expr = join(wavs, "\\n")
 		return reunions#process(printf("echo \\\"%s\\\" | awk '{ print \\\"aplay \\\" $0 }' | bash", expr))
 	else
 		return ""
