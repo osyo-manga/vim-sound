@@ -43,10 +43,10 @@ function! s:play_wav_list(wavs)
 		return vimproc#system_bg(printf("ruby -r \"Win32API\" -e \"%s\"", expr))
 	elseif executable("afplay")
 		let expr = join(wavs, "\n")
-		return reunions#process(printf('echo "%s" | awk ''{ print "afplay " $0 }'' | bash', expr))
+		return vimproc#system_bg(printf('echo "%s" | awk ''{ print "afplay " $0 }'' | bash', expr))
 	elseif executable("aplay")
 		let expr = join(wavs, "\n")
-		return reunions#process(printf('echo "%s" | awk ''{ print "aplay " $0 }'' | bash', expr))
+		return vimproc#system_bg(printf('echo "%s" | awk ''{ print "aplay " $0 }'' | bash', expr))
 	else
 		return ""
 	endif
